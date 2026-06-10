@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - Administrador</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="marca-agua"></div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>⚙️ Panel de Control del Administrador</h1>
+        <a href="index.html" class="btn-enlace">👁️ Ir a la Página Pública</a>
+    </div>
+    <p>Historial de ingresos y control de publicaciones activas en el colegio.</p>
+
+    <h2>📋 Registro de Control Histórico</h2>
+    <div class="tabla-contenedor">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha / Estado</th>
+                    <th>Usuario / Vendedor</th>
+                    <th>Contacto</th>
+                    <th>Producto o Acción Realizada</th>
+                    <th>Categoría</th>
+                    <th>Moderación</th>
+                </tr>
+            </thead>
+            <tbody id="lista-registros">
+                </tbody>
+        </table>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        window.addEventListener("load", function() {
+            registrarActividad("Administrador", "Abrió el panel de control secreto");
+        });
+    </script>
+</body>
+</html>

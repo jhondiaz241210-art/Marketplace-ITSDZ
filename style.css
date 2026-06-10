@@ -1,0 +1,162 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f4f4f4;
+    position: relative;
+    min-height: 100vh;
+}
+
+.marca-agua {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    background-image: url('escudo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.08;
+    z-index: -1;
+    pointer-events: none;
+}
+
+h1, h2, h3 {
+    color: #333;
+}
+
+.btn-enlace {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
+.btn-enlace:hover {
+    background-color: #5a6268;
+}
+
+.menu-categorias {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+}
+
+.btn-filtro {
+    padding: 12px 20px;
+    margin-right: 10px;
+    margin-top: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+.btn-filtro:hover { background-color: #218838; }
+.btn-donacion { background-color: #17a2b8; }
+.btn-donacion:hover { background-color: #138496; }
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 450px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+input, textarea, select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button[type="submit"] {
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+button[type="submit"]:hover { background-color: #0056b3; }
+
+hr { border: 0; border-top: 1px solid #eee; margin: 10px 0; }
+
+.contenedor-productos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.producto {
+    border: 1px solid #ccc;
+    background: white;
+    border-radius: 8px;
+    width: 300px;
+    overflow: hidden;
+    box-shadow: 0px 4px 6px rgba(0,0,0,0.05);
+}
+
+.producto img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.producto-info { padding: 15px; }
+
+.vendedor-info {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-top: 1px dashed #ddd;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #555;
+}
+
+/* ESTILOS PARA LA TABLA DE CONTROL DEL ADMINISTRADOR */
+.tabla-contenedor {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0,0,0,0.05);
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #343a40;
+    color: white;
+}
+
+.badge {
+    background: #e2e3e5;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+}

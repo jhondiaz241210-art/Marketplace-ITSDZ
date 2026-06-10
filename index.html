@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace Técnico Dámaso</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="marca-agua"></div>
+
+    <h1>Marketplace Técnico Dámaso</h1>
+    <p>Bienvenido a la plataforma escolar. ¡Busca lo que necesites o publica tu propio producto/servicio!</p>
+
+    <div class="menu-categorias">
+        <h3>¿Qué estás buscando hoy?</h3>
+        <button class="btn-filtro" onclick="filtrarProductos('todos')">✨ Ver Todo</button>
+        <button class="btn-filtro" onclick="filtrarProductos('uniformes')">👔 Uniformes</button>
+        <button class="btn-filtro" onclick="filtrarProductos('materiales')">📚 Materiales</button>
+        <button class="btn-filtro" onclick="filtrarProductos('tareas')">📝 Hacer Tareas / Trabajos</button>
+        <button class="btn-filtro btn-donacion" onclick="filtrarProductos('donaciones')">🎁 Donaciones</button>
+    </div>
+
+    <form id="formulario">
+        <h3>Publicar un Artículo o Servicio</h3>
+        <label for="categoria">Categoría:</label>
+        <select id="categoria" required>
+            <option value="" disabled selected>Selecciona una categoría...</option>
+            <option value="uniformes">👔 Uniformes</option>
+            <option value="materiales">📚 Materiales</option>
+            <option value="tareas">📝 Hacer Tareas / Trabajos</option>
+            <option value="donaciones">🎁 Donación (Artículos Gratis)</option>
+        </select>
+
+        <input type="text" placeholder="Nombre del Producto o Servicio" id="producto" required>
+        <input type="number" placeholder="Precio ($) o 0 si es donación" id="precio" required>
+        <input type="file" id="foto" accept="image/*" required>
+        <textarea placeholder="Descripción detallada (materias que manejas, estado del uniforme...)" id="descripcion" required></textarea>
+        
+        <hr>
+        <h3>Información del Vendedor</h3>
+        <input type="text" placeholder="Tu Nombre Completo" id="vendedor" required>
+        <input type="text" placeholder="Grado / WhatsApp de contacto" id="contacto" required>
+        
+        <button type="submit">Publicar en el Marketplace</button>
+    </form>
+
+    <h2>🛒 Artículos Disponibles para la Comunidad</h2>
+    <div id="productos" class="contenedor-productos"></div>
+
+    <script src="script.js"></script>
+    <script>
+        window.addEventListener("load", function() {
+            registrarActividad("Estudiante/Público", "Entró a la plataforma");
+            mostrarProductosGuardados();
+        });
+    </script>
+</body>
+</html>
