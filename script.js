@@ -1,6 +1,39 @@
-// Protección ante localStorage vacío en celulares nuevos usando '|| []'
-let productos = JSON.parse(localStorage.getItem('market_productos')) || [];
-let usuarios = JSON.parse(localStorage.getItem('market_usuarios')) || [];
+// --- 1. BASE DE DATOS SINCRONIZADA (DISPONIBLE EN PC Y CELULAR) ---
+const usuariosPredeterminados = [
+    { nombre: "jhon", clave: "1234" },
+    { nombre: "lina", clave: "5678" },
+    { nombre: "estudiante", clave: "damaso" }
+];
+
+const productosPredeterminados = [
+    {
+        id: 101,
+        nombre: "Overol de Taller - Talla M",
+        categoria: "uniformes",
+        precio: 35000,
+        imagen: "https://images.unsplash.com/photo-1621243804936-775306a8f2e3?w=500",
+        propietario: "lina"
+    },
+    {
+        id: 102,
+        nombre: "Juego de Destornilladores Stanley",
+        categoria: "herramientas",
+        precio: 25000,
+        imagen: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?w=500",
+        propietario: "estudiante"
+    }
+];
+
+// Inyección forzada para que compartan los mismos datos iniciales en todo lado
+if (!localStorage.getItem('market_productos')) {
+    localStorage.setItem('market_productos', JSON.stringify(productosPredeterminados));
+}
+if (!localStorage.getItem('market_usuarios')) {
+    localStorage.setItem('market_usuarios', JSON.stringify(usuariosPredeterminados));
+}
+
+let productos = JSON.parse(localStorage.getItem('market_productos'));
+let usuarios = JSON.parse(localStorage.getItem('market_usuarios'));
 let carrito = JSON.parse(localStorage.getItem('market_carrito')) || [];
 let usuarioActivo = JSON.parse(localStorage.getItem('market_sesion')) || null;
 
@@ -54,10 +87,9 @@ function configurarEventos() {
         }
     });
 
-    // Control por SUBMIT (Garantiza que el botón "Ir" del celular sí procese los datos)
     document.getElementById('form-auth').addEventListener('submit', (e) => {
         e.preventDefault();
-        const user = document.getElementById('auth-usuario').value.trim();
+        const user = document.getElementById('auth-usuario').value.trim().toLowerCase();
         const clave = document.getElementById('auth-clave').value;
 
         if (modoAuth === "ingreso") {
@@ -71,13 +103,13 @@ function configurarEventos() {
                 if (encontrado) {
                     usuarioActivo = { nombre: encontrado.nombre, rol: "vendedor" };
                 } else {
-                    alert("Credenciales incorrectas.");
+                    alert("¡Error! Ese usuario no está registrado en este dispositivo o la clave está mal.");
                     return;
                 }
             }
         } else {
             if (user === ADMIN_USER || usuarios.some(u => u.nombre === user)) {
-                alert("Usuario no disponible.");
+                alert("Este nombre ya está ocupado.");
                 return;
             }
             usuarios.push({ nombre: user, clave: clave });
@@ -99,22 +131,36 @@ function configurarEventos() {
         renderizarProductos();
     });
 
+    // PROCESAMIENTO DE IMÁGENES DE LA GALERÍA
     document.getElementById('form-producto').addEventListener('submit', (e) => {
         e.preventDefault();
-        const nuevoProd = {
-            id: Date.now(),
-            nombre: document.getElementById('prod-nombre').value,
-            categoria: document.getElementById('prod-categoria').value,
-            precio: parseInt(document.getElementById('prod-precio').value),
-            imagen: document.getElementById('prod-imagen').value,
-            propietario: usuarioActivo.nombre
-        };
+        
+        const archivoImagen = document.getElementById('prod-imagen-file').files[0];
+        
+        if (!archivoImagen) {
+            alert("Por favor, selecciona una foto de tu galería.");
+            return;
+        }
 
-        productos.push(nuevoProd);
-        localStorage.setItem('market_productos', JSON.stringify(productos));
-        renderizarProductos();
-        document.getElementById('form-producto').reset();
-        alert("Artículo publicado con éxito.");
+        const lector = new FileReader();
+        lector.onloadend = function() {
+            const nuevoProd = {
+                id: Date.now(),
+                nombre: document.getElementById('prod-nombre').value,
+                categoria: document.getElementById('prod-categoria').value,
+                precio: parseInt(document.getElementById('prod-precio').value),
+                imagen: lector.result, // Aquí se guarda la foto convertida de la galería
+                propietario: usuarioActivo.nombre
+            };
+
+            productos.push(nuevoProd);
+            localStorage.setItem('market_productos', JSON.stringify(productos));
+            renderizarProductos();
+            document.getElementById('form-producto').reset();
+            alert("¡Artículo publicado con foto de la galería!");
+        }
+        
+        lector.readAsDataURL(archivoImagen); // Convierte a cadena de texto Base64 liviana
     });
 
     document.querySelectorAll('.btn-filtro').forEach(btn => {
@@ -136,7 +182,7 @@ function configurarEventos() {
 
 function actualizarInterfazUsuario() {
     if (usuarioActivo) {
-        infoUsuario.innerHTML = `Conectado como: <strong>${usuarioActivo.nombre}</strong>`;
+        infoUsuario.innerHTML = `Conectado como: <strong style="text-transform: capitalize;">${usuarioActivo.nombre}</strong>`;
         btnAuth.style.display = 'none';
         btnCerrarSesion.style.display = 'inline-block';
         seccionVendedor.style.display = 'block';
@@ -177,7 +223,7 @@ function renderizarProductos() {
             <div class="info-prod">
                 <h4>${p.nombre}</h4>
                 <p class="precio">$${p.precio.toLocaleString()}</p>
-                <p class="vendedor">Por: ${p.propietario}</p>
+                <p class="vendedor" style="text-transform: capitalize;">Por: ${p.propietario}</p>
                 ${botonAccion}
             </div>
         `;

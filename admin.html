@@ -1,87 +1,278 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - MTD</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+// --- 1. BASE DE DATOS SINCRONIZADA (DISPONIBLE EN PC Y CELULAR) ---
+const usuariosPredeterminados = [
+    { nombre: "jhon", clave: "1234" },
+    { nombre: "lina", clave: "5678" },
+    { nombre: "estudiante", clave: "damaso" }
+];
 
-    <header class="navbar" style="background-color: #111;">
-        <div class="logo">MTD Admin 🔒</div>
-        <button onclick="window.location.href='index.html'" class="btn-nav">Volver a la Tienda</button>
-    </header>
+const productosPredeterminados = [
+    {
+        id: 101,
+        nombre: "Overol de Taller - Talla M",
+        categoria: "uniformes",
+        precio: 35000,
+        imagen: "https://images.unsplash.com/photo-1621243804936-775306a8f2e3?w=500",
+        propietario: "lina"
+    },
+    {
+        id: 102,
+        nombre: "Juego de Destornilladores Stanley",
+        categoria: "herramientas",
+        precio: 25000,
+        imagen: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?w=500",
+        propietario: "estudiante"
+    }
+];
 
-    <main class="contenedor-principal">
-        <div class="banner">
-            <h2>Panel de Control Global</h2>
-            <p>Moderación de publicaciones y auditoría de la comunidad</p>
-        </div>
+// Inyección forzada para que compartan los mismos datos iniciales en todo lado
+if (!localStorage.getItem('market_productos')) {
+    localStorage.setItem('market_productos', JSON.stringify(productosPredeterminados));
+}
+if (!localStorage.getItem('market_usuarios')) {
+    localStorage.setItem('market_usuarios', JSON.stringify(usuariosPredeterminados));
+}
 
-        <section class="panel-vendedor" style="margin-top: 20px;">
-            <h3>Bitácora de Control: Todos los Productos Activos</h3>
-            <div style="overflow-x: auto; margin-top: 15px;">
-                <table id="tabla-admin-productos" style="width: 100%; border-collapse: collapse; text-align: left; background: white;">
-                    <thead>
-                        <tr style="background: #eee; border-bottom: 2px solid #ccc;">
-                            <th style="padding: 10px;">Artículo</th>
-                            <th style="padding: 10px;">Categoría</th>
-                            <th style="padding: 10px;">Precio</th>
-                            <th style="padding: 10px;">Vendedor</th>
-                            <th style="padding: 10px;">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpo-tabla-admin"></tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+let productos = JSON.parse(localStorage.getItem('market_productos'));
+let usuarios = JSON.parse(localStorage.getItem('market_usuarios'));
+let carrito = JSON.parse(localStorage.getItem('market_carrito')) || [];
+let usuarioActivo = JSON.parse(localStorage.getItem('market_sesion')) || null;
 
-    <script>
-        let sesion = JSON.parse(localStorage.getItem('market_sesion')) || null;
-        if (!sesion || sesion.rol !== 'admin') {
-            alert("Acceso denegado. Solo administradores.");
-            window.location.href = 'index.html';
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "damaso2025";
+
+let modoAuth = "ingreso";
+let categoriaFiltro = "todos";
+
+const btnAuth = document.getElementById('btnAuth');
+const btnCerrarSesion = document.getElementById('btnCerrarSesion');
+const infoUsuario = document.getElementById('info-usuario');
+const seccionVendedor = document.getElementById('seccion-vendedor');
+const vitrina = document.getElementById('vitrina-productos');
+const contadorCarrito = document.getElementById('contador-carrito');
+const modalAuth = document.getElementById('modal-auth');
+const modalCarrito = document.getElementById('modal-carrito');
+
+document.addEventListener('DOMContentLoaded', () => {
+    actualizarInterfazUsuario();
+    renderizarProductos();
+    actualizarContadorCarrito();
+    configurarEventos();
+});
+
+function configurarEventos() {
+    btnAuth.addEventListener('click', () => { modalAuth.style.display = 'flex'; });
+    document.getElementById('cerrar-auth').addEventListener('click', () => { modalAuth.style.display = 'none'; });
+    
+    document.getElementById('btnVerCarrito').addEventListener('click', () => {
+        renderizarCarrito();
+        modalCarrito.style.display = 'flex';
+    });
+    document.getElementById('cerrar-carrito').addEventListener('click', () => { modalCarrito.style.display = 'none'; });
+
+    document.getElementById('enlace-cambio-auth').addEventListener('click', () => {
+        const titulo = document.getElementById('auth-titulo');
+        const btnSubmit = document.getElementById('btn-submit-auth');
+        const pCambio = document.getElementById('enlace-cambio-auth');
+        
+        if (modoAuth === "ingreso") {
+            modoAuth = "registro";
+            titulo.textContent = "Crear Cuenta Nueva";
+            btnSubmit.textContent = "Registrarme";
+            pCambio.textContent = "Ya tengo cuenta, ingresar";
+        } else {
+            modoAuth = "ingreso";
+            titulo.textContent = "Iniciar Sesión";
+            btnSubmit.textContent = "Ingresar";
+            pCambio.textContent = "Regístrate aquí";
         }
+    });
 
-        let productos = JSON.parse(localStorage.getItem('market_productos')) || [];
+    document.getElementById('form-auth').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const user = document.getElementById('auth-usuario').value.trim().toLowerCase();
+        const clave = document.getElementById('auth-clave').value;
 
-        function cargarTablaAdmin() {
-            const tbody = document.getElementById('cuerpo-tabla-admin');
-            tbody.innerHTML = "";
-
-            if (productos.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="padding:15px; text-align:center; color:#777;">No hay anuncios registrados.</td></tr>`;
+        if (modoAuth === "ingreso") {
+            if (user === ADMIN_USER && clave === ADMIN_PASS) {
+                usuarioActivo = { nombre: "Súper Administrador", rol: "admin" };
+                localStorage.setItem('market_sesion', JSON.stringify(usuarioActivo));
+                window.location.href = 'admin.html';
+                return;
+            } else {
+                const encontrado = usuarios.find(u => u.nombre === user && u.clave === clave);
+                if (encontrado) {
+                    usuarioActivo = { nombre: encontrado.nombre, rol: "vendedor" };
+                } else {
+                    alert("¡Error! Ese usuario no está registrado en este dispositivo o la clave está mal.");
+                    return;
+                }
+            }
+        } else {
+            if (user === ADMIN_USER || usuarios.some(u => u.nombre === user)) {
+                alert("Este nombre ya está ocupado.");
                 return;
             }
-
-            productos.forEach(p => {
-                const tr = document.createElement('tr');
-                tr.style.borderBottom = "1px solid #ddd";
-                tr.innerHTML = `
-                    <td style="padding: 10px; font-weight: bold;">${p.nombre}</td>
-                    <td style="padding: 10px; text-transform: capitalize;">${p.categoria}</td>
-                    <td style="padding: 10px; color: #0056b3;">$${p.precio.toLocaleString()}</td>
-                    <td style="padding: 10px;">${p.propietario}</td>
-                    <td style="padding: 10px;"><button class="btn-nav btn-peligro" style="padding: 4px 8px; font-size: 0.8rem;" onclick="purgarProducto(${p.id})">Eliminar</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
+            usuarios.push({ nombre: user, clave: clave });
+            localStorage.setItem('market_usuarios', JSON.stringify(usuarios));
+            usuarioActivo = { nombre: user, rol: "vendedor" };
         }
 
-        window.purgarProducto = function(id) {
-            if (confirm("¿Deseas eliminar este artículo definitivamente del sistema escolar?")) {
-                productos = productos.filter(p => p.id !== id);
-                localStorage.setItem('market_productos', JSON.stringify(productos));
-                let carrito = JSON.parse(localStorage.getItem('market_carrito')) || [];
-                carrito = carrito.filter(c => c.id !== id);
-                localStorage.setItem('market_carrito', JSON.stringify(carrito));
-                cargarTablaAdmin();
-            }
-        };
+        localStorage.setItem('market_sesion', JSON.stringify(usuarioActivo));
+        actualizarInterfazUsuario();
+        renderizarProductos();
+        document.getElementById('form-auth').reset();
+        modalAuth.style.display = 'none';
+    });
 
-        document.addEventListener('DOMContentLoaded', cargarTablaAdmin);
-    </script>
-</body>
-</html>
+    btnCerrarSesion.addEventListener('click', () => {
+        usuarioActivo = null;
+        localStorage.removeItem('market_sesion');
+        actualizarInterfazUsuario();
+        renderizarProductos();
+    });
+
+    // PROCESAMIENTO DE IMÁGENES DE LA GALERÍA
+    document.getElementById('form-producto').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const archivoImagen = document.getElementById('prod-imagen-file').files[0];
+        
+        if (!archivoImagen) {
+            alert("Por favor, selecciona una foto de tu galería.");
+            return;
+        }
+
+        const lector = new FileReader();
+        lector.onloadend = function() {
+            const nuevoProd = {
+                id: Date.now(),
+                nombre: document.getElementById('prod-nombre').value,
+                categoria: document.getElementById('prod-categoria').value,
+                precio: parseInt(document.getElementById('prod-precio').value),
+                imagen: lector.result, // Aquí se guarda la foto convertida de la galería
+                propietario: usuarioActivo.nombre
+            };
+
+            productos.push(nuevoProd);
+            localStorage.setItem('market_productos', JSON.stringify(productos));
+            renderizarProductos();
+            document.getElementById('form-producto').reset();
+            alert("¡Artículo publicado con foto de la galería!");
+        }
+        
+        lector.readAsDataURL(archivoImagen); // Convierte a cadena de texto Base64 liviana
+    });
+
+    document.querySelectorAll('.btn-filtro').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('activo'));
+            e.target.classList.add('activo');
+            categoriaFiltro = e.target.getAttribute('data-cat');
+            renderizarProductos();
+        });
+    });
+
+    document.getElementById('btn-vaciar-carrito').addEventListener('click', () => {
+        carrito = [];
+        localStorage.setItem('market_carrito', JSON.stringify(carrito));
+        actualizarContadorCarrito();
+        renderizarCarrito();
+    });
+}
+
+function actualizarInterfazUsuario() {
+    if (usuarioActivo) {
+        infoUsuario.innerHTML = `Conectado como: <strong style="text-transform: capitalize;">${usuarioActivo.nombre}</strong>`;
+        btnAuth.style.display = 'none';
+        btnCerrarSesion.style.display = 'inline-block';
+        seccionVendedor.style.display = 'block';
+    } else {
+        infoUsuario.innerHTML = `Navegando como: <strong>Invitado</strong>`;
+        btnAuth.style.display = 'inline-block';
+        btnCerrarSesion.style.display = 'none';
+        seccionVendedor.style.display = 'none';
+    }
+}
+
+function renderizarProductos() {
+    vitrina.innerHTML = "";
+    const listaFiltrada = categoriaFiltro === "todos" ? productos : productos.filter(p => p.categoria === categoriaFiltro);
+
+    if (listaFiltrada.length === 0) {
+        vitrina.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:20px; color:#777;">Categoría vacía.</p>`;
+        return;
+    }
+
+    listaFiltrada.forEach(p => {
+        const tarjeta = document.createElement('div');
+        tarjeta.className = "tarjeta-producto";
+        
+        let botonAccion = "";
+        if (usuarioActivo) {
+            if (p.propietario === usuarioActivo.nombre) {
+                botonAccion = `<button class="btn-bloque btn-peligro" onclick="eliminarProducto(${p.id})">Retirar Anuncio</button>`;
+            } else {
+                botonAccion = `<button class="btn-bloque btn-primario" onclick="agregarAlCarrito(${p.id})">Añadir al Carrito</button>`;
+            }
+        } else {
+            botonAccion = `<button class="btn-bloque btn-primario" onclick="alert('Inicia sesión para añadir al carrito')">Añadir al Carrito</button>`;
+        }
+
+        tarjeta.innerHTML = `
+            <img src="${p.imagen}" alt="${p.nombre}">
+            <div class="info-prod">
+                <h4>${p.nombre}</h4>
+                <p class="precio">$${p.precio.toLocaleString()}</p>
+                <p class="vendedor" style="text-transform: capitalize;">Por: ${p.propietario}</p>
+                ${botonAccion}
+            </div>
+        `;
+        vitrina.appendChild(tarjeta);
+    });
+}
+
+window.agregarAlCarrito = function(id) {
+    const prod = productos.find(p => p.id === id);
+    if (prod) {
+        carrito.push(prod);
+        localStorage.setItem('market_carrito', JSON.stringify(carrito));
+        actualizarContadorCarrito();
+    }
+};
+
+function actualizarContadorCarrito() {
+    contadorCarrito.textContent = carrito.length;
+}
+
+function renderizarCarrito() {
+    const listaHtml = document.getElementById('lista-carrito');
+    const totalHtml = document.getElementById('total-precio-carrito');
+    listaHtml.innerHTML = "";
+    let sumaTotal = 0;
+    
+    if (carrito.length === 0) {
+        listaHtml.innerHTML = "<p style='color:#777; text-align:center;'>Carrito vacío.</p>";
+        totalHtml.textContent = "0";
+        return;
+    }
+
+    carrito.forEach(item => {
+        sumaTotal += item.precio;
+        const div = document.createElement('div');
+        div.className = "item-carrito";
+        div.innerHTML = `<span>${item.nombre}</span><span><strong>$${item.precio.toLocaleString()}</strong></span>`;
+        listaHtml.appendChild(div);
+    });
+    totalHtml.textContent = sumaTotal.toLocaleString();
+}
+
+window.eliminarProducto = function(id) {
+    if (confirm("¿Retirar este producto?")) {
+        productos = productos.filter(p => p.id !== id);
+        localStorage.setItem('market_productos', JSON.stringify(productos));
+        carrito = carrito.filter(c => c.id !== id);
+        localStorage.setItem('market_carrito', JSON.stringify(carrito));
+        actualizarContadorCarrito();
+        renderizarProductos();
+    }
+};

@@ -22,7 +22,7 @@
         <p id="info-usuario">Navegando como: <strong>Invitado</strong></p>
     </section>
 
-    <nav class="categorias">
+    <nav class="categories">
         <button class="btn-filtro activo" data-cat="todos">Todos</button>
         <button class="btn-filtro" data-cat="uniformes">Uniformes</button>
         <button class="btn-filtro" data-cat="herramientas">Herramientas</button>
@@ -44,7 +44,10 @@
                 <option value="donaciones">Donaciones</option>
             </select>
             <input type="number" id="prod-precio" placeholder="Precio (Ej: 15000)" required>
-            <input type="url" id="prod-imagen" placeholder="Link de la imagen (URL de Google)" required>
+            
+            <label style="display:block; margin-bottom:6px; font-size:0.9rem; color:#555;">Seleccionar foto de la galería:</label>
+            <input type="file" id="prod-imagen-file" accept="image/*" required style="padding:8px;">
+            
             <button type="submit" class="btn-bloque btn-exito">Publicar Artículo</button>
         </form>
     </section>
