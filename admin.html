@@ -15,6 +15,34 @@
     </div>
     <p>Historial de ingresos y control de publicaciones activas en el colegio.</p>
 
+    <!-- FORMULARIO DEL ADMINISTRADOR -->
+    <form id="formulario" style="background-color: #f0f4f8; border: 2px dashed #0056b3; margin-bottom: 40px;">
+        <h3 style="color: #0056b3;">📢 Publicar como Administrador (Aviso Oficial)</h3>
+        <label for="categoria">Categoría:</label>
+        <select id="categoria" required>
+            <option value="" disabled selected>Selecciona una categoría...</option>
+            <option value="uniformes">👔 Uniformes</option>
+            <option value="materiales">📚 Materiales</option>
+            <option value="tareas">📝 Hacer Tareas / Trabajos</option>
+            <option value="donaciones">🎁 Donación (Artículos Gratis)</option>
+        </select>
+
+        <input type="text" placeholder="Nombre del Producto o Anuncio" id="producto" required>
+        <input type="number" placeholder="Precio ($) o 0 si es donación/comunicado" id="precio" required>
+        
+        <label style="font-size: 13px; color: #555; display: block; margin-top: 10px;">Foto desde archivo o cámara:</label>
+        <input type="file" id="foto" accept="image/*" capture="environment" required>
+        
+        <textarea placeholder="Escribe los detalles del anuncio o producto institucional..." id="descripcion" required></textarea>
+        
+        <!-- Datos ocultos para identificar que eres tú -->
+        <input type="hidden" id="vendedor" value="Administrador">
+        <input type="hidden" id="contacto" value="Oficina / Coordinación">
+        
+        <button type="submit" style="background-color: #0056b3;">Publicar Oferta Administrativa</button>
+    </form>
+
+    <!-- REGISTROS EXCLUSIVOS PARA TI -->
     <h2>📋 Registro de Control Histórico</h2>
     <div class="tabla-contenedor">
         <table>
@@ -29,7 +57,8 @@
                 </tr>
             </thead>
             <tbody id="lista-registros">
-                </tbody>
+                <!-- Se llena automáticamente -->
+            </tbody>
         </table>
     </div>
 
