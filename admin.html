@@ -3,49 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control - Administrador</title>
+    <title>Panel de Administración - MTD</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="marca-agua"></div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-        <h1>⚙️ Panel de Control del Administrador</h1>
-        <a href="index.html" class="btn-enlace">👁️ Ver Vitrina Pública</a>
-    </div>
-    <p>Historial de control, auditoría de transacciones y moderación global del colegio.</p>
+    <header class="navbar" style="background-color: #111;">
+        <div class="logo">MTD Admin 🔒</div>
+        <button onclick="window.location.href='index.html'" class="btn-nav">Volver a la Tienda</button>
+    </header>
 
-    <h2>📋 Registro de Auditoría y Control del Sistema</h2>
-    <div class="tabla-contenedor">
-        <table>
-            <thead>
-                <tr>
-                    <th>Fecha / Estado</th>
-                    <th>Usuario / Vendedor</th>
-                    <th>Contacto</th>
-                    <th>Producto o Acción Realizada</th>
-                    <th>Categoría</th>
-                    <th>Moderación</th>
-                </tr>
-            </thead>
-            <tbody id="lista-registros">
-                </tbody>
-        </table>
-    </div>
+    <main class="contenedor-principal">
+        <div class="banner">
+            <h2>Panel de Control Global</h2>
+            <p>Moderación de publicaciones y auditoría de la comunidad</p>
+        </div>
 
-    <script src="script.js"></script>
+        <section class="panel-vendedor" style="margin-top: 20px;">
+            <h3>Bitácora de Control: Todos los Productos Activos</h3>
+            <div style="overflow-x: auto; margin-top: 15px;">
+                <table id="tabla-admin-productos" style="width: 100%; border-collapse: collapse; text-align: left; background: white;">
+                    <thead>
+                        <tr style="background: #eee; border-bottom: 2px solid #ccc;">
+                            <th style="padding: 10px;">Artículo</th>
+                            <th style="padding: 10px;">Categoría</th>
+                            <th style="padding: 10px;">Precio</th>
+                            <th style="padding: 10px;">Vendedor</th>
+                            <th style="padding: 10px;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla-admin"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
     <script>
-        window.addEventListener("load", function() {
-            // Verificar de seguridad: si no es admin, lo devuelve
-            let usuarioActivo = localStorage.getItem("market_usuario_activo");
-            if (usuarioActivo !== "Administrador") {
-                alert("Acceso denegado. Solo el Administrador puede ver este panel.");
-                window.location.href = "index.html";
-            } else {
-                registrarActividad("Administrador", "Abrió el panel de control secreto");
-                actualizarTablaAdmin();
+        let sesion = JSON.parse(localStorage.getItem('market_sesion')) || null;
+        if (!sesion || sesion.rol !== 'admin') {
+            alert("Acceso denegado. Solo administradores.");
+            window.location.href = 'index.html';
+        }
+
+        let productos = JSON.parse(localStorage.getItem('market_productos')) || [];
+
+        function cargarTablaAdmin() {
+            const tbody = document.getElementById('cuerpo-tabla-admin');
+            tbody.innerHTML = "";
+
+            if (productos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="padding:15px; text-align:center; color:#777;">No hay anuncios registrados.</td></tr>`;
+                return;
             }
-        });
+
+            productos.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = "1px solid #ddd";
+                tr.innerHTML = `
+                    <td style="padding: 10px; font-weight: bold;">${p.nombre}</td>
+                    <td style="padding: 10px; text-transform: capitalize;">${p.categoria}</td>
+                    <td style="padding: 10px; color: #0056b3;">$${p.precio.toLocaleString()}</td>
+                    <td style="padding: 10px;">${p.propietario}</td>
+                    <td style="padding: 10px;"><button class="btn-nav btn-peligro" style="padding: 4px 8px; font-size: 0.8rem;" onclick="purgarProducto(${p.id})">Eliminar</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.purgarProducto = function(id) {
+            if (confirm("¿Deseas eliminar este artículo definitivamente del sistema escolar?")) {
+                productos = productos.filter(p => p.id !== id);
+                localStorage.setItem('market_productos', JSON.stringify(productos));
+                let carrito = JSON.parse(localStorage.getItem('market_carrito')) || [];
+                carrito = carrito.filter(c => c.id !== id);
+                localStorage.setItem('market_carrito', JSON.stringify(carrito));
+                cargarTablaAdmin();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', cargarTablaAdmin);
     </script>
 </body>
 </html>

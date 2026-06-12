@@ -2,115 +2,78 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Marketplace Técnico Dámaso</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="marca-agua"></div>
 
-    <div class="barra-superior">
-        <div id="info-usuario-anonimo">
-            <span>👀 Navegando como Invitado</span>
-            <button class="btn-login" onclick="abrirModalAuth()">🔑 Iniciar Sesión / Registrarse</button>
+    <header class="navbar">
+        <div class="logo">MTD 🛠️</div>
+        <div class="nav-buttons">
+            <button id="btnVerCarrito" class="btn-nav">🛒 Carrito (<span id="contador-carrito">0</span>)</button>
+            <button id="btnAuth" class="btn-nav btn-primario">Ingresar</button>
+            <button id="btnCerrarSesion" class="btn-nav btn-peligro" style="display: none;">Salir</button>
         </div>
-        <div id="info-usuario-logueado" style="display: none;">
-            <span>👋 ¡Hola, <strong id="nombre-usuario-activo" style="color:#0056b3;"></strong>! <span id="rango-admin" style="display:none; background:#dc3545; color:white; padding:2px 6px; border-radius:4px; font-size:11px; margin-left:5px;">🛡️ Admin</span></span>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <a href="admin.html" id="enlace-panel-admin" class="btn-enlace" style="display:none; background:#6c757d; font-size:12px; padding:6px 12px;">⚙️ Panel Admin</a>
-                <button class="btn-carrito-toggle" onclick="toggleCarrito()">🛒 Mi Carrito (<span id="contador-carrito">0</span>)</button>
-                <button class="btn-logout" onclick="cerrarSesion()">🔒 Salir</button>
-            </div>
-        </div>
-    </div>
+    </header>
 
-    <h1>Marketplace Técnico Dámaso</h1>
-    <p>La vitrina comercial de nuestra comunidad escolar.</p>
+    <section class="banner">
+        <h2>Ecosistema de Economía Circular</h2>
+        <p id="info-usuario">Navegando como: <strong>Invitado</strong></p>
+    </section>
 
-    <div class="menu-categorias">
-        <h3>¿Qué estás buscando hoy?</h3>
-        <button class="btn-filtro" onclick="filtrarProductos('todos')">✨ Ver Todo</button>
-        <button class="btn-filtro" onclick="filtrarProductos('uniformes')">👔 Uniformes</button>
-        <button class="btn-filtro" onclick="filtrarProductos('materiales')">📚 Materiales</button>
-        <button class="btn-filtro" onclick="filtrarProductos('tareas')">📝 Hacer Tareas / Trabajos</button>
-        <button class="btn-filtro btn-donacion" onclick="filtrarProductos('donaciones')">🎁 Donaciones</button>
-    </div>
+    <nav class="categorias">
+        <button class="btn-filtro activo" data-cat="todos">Todos</button>
+        <button class="btn-filtro" data-cat="uniformes">Uniformes</button>
+        <button class="btn-filtro" data-cat="herramientas">Herramientas</button>
+        <button class="btn-filtro" data-cat="donaciones">Donaciones</button>
+    </nav>
 
-    <div id="contenedor-formulario-vendedor" style="display: none;">
-        <form id="formulario">
-            <h3 id="titulo-formulario">📢 Publicar un Nuevo Artículo o Servicio</h3>
-            
-            <label for="categoria">Categoría:</label>
-            <select id="categoria" onchange="evaluarCamposIA()" required>
-                <option value="" disabled selected>Selecciona una categoría...</option>
-                <option value="uniformes">👔 Uniformes</option>
-                <option value="materiales">📚 Materiales</option>
-                <option value="tareas">📝 Hacer Tareas / Trabajos</option>
-                <option value="donaciones">🎁 Donación (Artículos Gratis)</option>
+    <main class="contenedor-principal">
+        <div id="vitrina-productos" class="grid-productos"></div>
+    </main>
+
+    <section id="seccion-vendedor" class="panel-vendedor" style="display: none;">
+        <h3>Subir Nuevo Artículo</h3>
+        <form id="form-producto" class="formulario-movil">
+            <input type="text" id="prod-nombre" placeholder="Nombre del artículo" required>
+            <select id="prod-categoria" required>
+                <option value="">Selecciona Categoría</option>
+                <option value="uniformes">Uniformes</option>
+                <option value="herramientas">Herramientas</option>
+                <option value="donaciones">Donaciones</option>
             </select>
-
-            <div id="seccion-simulador" style="display:none; background:#eef9ff; border-left:4px solid #0056b3; padding:10px; margin:10px 0; border-radius:4px;">
-                <p style="margin:0 0 5px 0; font-weight:bold; color:#0056b3; font-size:13px;">🤖 Asistente de Precios Escolar:</p>
-                <label style="font-size:12px;">Estado del artículo:</label>
-                <select id="estado-articulo" onchange="calcularPrecioSugerido()">
-                    <option value="nuevo">✨ Como nuevo / Perfecto estado</option>
-                    <option value="bueno">👍 Buen estado / Uso normal</option>
-                    <option value="desgastado">⚠️ Desgastado / Detalles de uso</option>
-                </select>
-                <p id="precio-sugerido-texto" style="margin:5px 0 0 0; font-size:13px; color:#333; font-weight:bold;"></p>
-            </div>
-
-            <input type="text" placeholder="Nombre del Producto o Servicio" id="producto" required>
-            <input type="number" placeholder="Precio ($) o 0 si es donación" id="precio" required>
-            
-            <label style="font-size: 13px; color: #555; display: block; margin-top: 10px;">Foto del producto (Usa la cámara de tu celular):</label>
-            <input type="file" id="foto" accept="image/*" capture="environment" required>
-            
-            <textarea placeholder="Descripción detallada (materias que manejas, estado del uniforme...)" id="descripcion" required></textarea>
-            
-            <hr>
-            <h3>Contacto de Entrega</h3>
-            <input type="text" placeholder="Grado / WhatsApp de contacto (Ej: 11-02 / 312...)" id="contacto" required>
-            
-            <button type="submit" id="btn-enviar-formulario">Subir al Marketplace</button>
+            <input type="number" id="prod-precio" placeholder="Precio (Ej: 15000)" required>
+            <input type="url" id="prod-imagen" placeholder="Link de la imagen (URL de Google)" required>
+            <button type="submit" class="btn-bloque btn-exito">Publicar Artículo</button>
         </form>
-    </div>
-
-    <h2>🛒 Artículos Disponibles para la Comunidad</h2>
-    <div id="productos" class="contenedor-productos"></div>
+    </section>
 
     <div id="modal-auth" class="modal">
-        <div class="modal-contenido">
-            <span class="cerrar-modal" onclick="cerrarModalAuth()">&times;</span>
-            <h2 id="auth-titulo">Iniciar Sesión</h2>
-            <div id="form-auth">
-                <input type="text" placeholder="Nombre de Usuario" id="auth-usuario">
-                <input type="password" placeholder="Contraseña" id="auth-clave">
-                <button onclick="procesarAuth()" id="btn-auth-principal">Ingresar</button>
-                <p id="texto-cambio-auth" style="margin-top:15px; text-align:center; font-size:13px;">
-                    ¿Quieres vender o usar el carrito? <a href="#" onclick="cambiarModoAuth(true)">Regístrate aquí</a>
-                </p>
-            </div>
+        <div class="contenido-modal">
+            <span class="cerrar-modal" id="cerrar-auth">&times;</span>
+            <h3 id="auth-titulo">Iniciar Sesión</h3>
+            <form id="form-auth" class="formulario-movil">
+                <input type="text" id="auth-usuario" placeholder="Usuario" required>
+                <input type="password" id="auth-clave" placeholder="Contraseña" required>
+                <button type="submit" id="btn-submit-auth" class="btn-bloque btn-primario">Ingresar</button>
+            </form>
+            <p class="cambio-modo-auth">¿No tienes cuenta? <span id="enlace-cambio-auth">Regístrate aquí</span></p>
         </div>
     </div>
 
     <div id="modal-carrito" class="modal">
-        <div class="modal-contenido">
-            <span class="cerrar-modal" onclick="toggleCarrito()">&times;</span>
-            <h2>🛒 Mi Carrito de Interés</h2>
-            <div id="lista-carrito" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
-            <div style="border-top: 1px solid #eee; padding-top: 10px; font-weight: bold; text-align: right; font-size: 16px;">
-                Total Estimado: <span id="total-carrito" style="color: #28a745;">$0</span>
+        <div class="contenido-modal">
+            <span class="cerrar-modal" id="cerrar-carrito">&times;</span>
+            <h3>Tu Carrito Presupuestal</h3>
+            <div id="lista-carrito"></div>
+            <div class="total-carrito">
+                <p>Total Estimado: <strong>$<span id="total-precio-carrito">0</span></strong></p>
             </div>
-            <p style="font-size: 11px; color:#666; margin-top:10px; text-align:center;">📌 Recuerda contactar directamente a cada vendedor por su WhatsApp para acordar la entrega en el colegio.</p>
+            <button id="btn-vaciar-carrito" class="btn-bloque btn-peligro">Vaciar Carrito</button>
         </div>
     </div>
 
     <script src="script.js"></script>
-    <script>
-        window.addEventListener("load", function() {
-            inicializarPlataforma();
-        });
-    </script>
 </body>
 </html>
